@@ -46,18 +46,44 @@ void setup_regex() {
   }
 }
 
-void write_files() {
+void write_files_setup() {
   int i, col_i;
 
   for(i=0; i<file_count; i++) {
     current_shape_file=all[i];
-    printf("shapefile_new(%d, %s, \"%s\", %i", current_shape_file->id, SHP_TYPES[current_shape_file->format], current_shape_file->name, current_shape_file->ncolumns);
+    printf("shapefile_new(%d, %s, \"%s\", %i", current_shape_file->id, SHP_TYPES[current_shape_file->format], current_shape_file->name, current_shape_file->ncolumns+1);
+
+    printf(",\n\t\"osm_id\", FTInteger, 11");
 
     for(col_i=0; col_i<current_shape_file->ncolumns; col_i++) {
       struct shape_column *column=current_shape_file->columns[col_i];
       printf(",\n\t\"%s\", %s, %s", column->name, COL_TYPES[column->type], COL_SIZES[column->type]);
     }
 
+    printf(");\n\n");
+  }
+}
+
+void write_files_parse(int format) {
+  int i, col_i;
+
+  for(i=0; i<file_count; i++) {
+    current_shape_file=all[i];
+
+    if(current_shape_file->format!=format)
+      continue;
+
+    for(col_i=0; col_i<current_shape_file->ncolumns; col_i++) {
+      struct shape_column *column=current_shape_file->columns[col_i];
+
+      printf("\tconst char *col%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, column->name);
+    }
+
+    printf("\tshapefile_add_node(%i, current_id", current_shape_file->id);
+    for(col_i=0; col_i<current_shape_file->ncolumns; col_i++) {
+      //struct shape_column *column=current_shape_file->columns[col_i];
+      printf(", col%d", col_i);
+    }
     printf(");\n\n");
   }
 }
@@ -130,5 +156,8 @@ void main() {
     parse_line(row);
   }
 
-  write_files();
+  write_files_setup();
+  write_files_parse(0);
+  write_files_parse(1);
+  write_files_parse(2);
 }
