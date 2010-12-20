@@ -1,27 +1,8 @@
-
-============================================================================
-
-The osm2shp program in this directory has been swapped on 23 September 2010.
-If you want the "old" osm2shp (which had last been modified in 2007), do
-
-svn update -r 23322
-
-The following is about the new osm2shp program which I'll dub the 
-"Geofabrik osm2shp" because it has been (and is still) used to create the
-free shapes on download.geofabrik.de.
-
 ============================================================================
 
 This program converts OSM XML to ESRI Shape Files.
 
-You need basic C programming skills if you want to make it create anything
-else than the default set of shape files. The program consists of two parts;
-one is the actual XML parsing and shapefile writing code, the other contains
-the "logic" that determines which shapefiles get created, and what data is
-copied to them.
-
-This second file is called osm2shp.config. See comments in that file for 
-details.
+You can define the layout of the shape files which will be created in the osm2shp.cfg file. After changing this file you have to run 'make' again.
 
 Note that this program creates UTF-8 shape files by default but you can specify
 -DLATIN1 when compiling to switch to LATIN-1.
@@ -33,4 +14,52 @@ you feed it. Unfortunately, neither reading from stdin nor reading compressed
 or binary formats is supported so you really have to have a .osm file for input.
 
 Written by Frederik Ramm <frederik@remote.org>, public domain
+Improved by Stephan Plepelits <skunk@openstreetmap.at>, public domain
 
+============================================================================
+
+Syntax of the osm2shp.cfg-file:
+
+The osm2shp.cfg contains several blocks, each of them defining a shape file.
+Empty lines and lines starting with a # will be ignored.
+
+* file <format> "<name>"
+Every new block starts with a "file" line:
+- The first parameter defines the format of the shapefile. Possible values:
+  point, line, polygon
+- The second parameter defines the name in quotation marks
+
+Example:
+file point "places"
+Defines a file of points with the name places
+
+* where key "<key>" [key "<key>"]
+Every block can have one or more where-lines. Each where line defines whether an osm object should be added to the shapefile or not.
+- The first parameter has to be 'key'
+- The second parameter defines a key in quotation marks
+You can repeat the parameters to add more keys (they will be linked by or)
+If you add several where-lines or one where line with several keys does not
+matter.
+
+Example:
+where key "landuse" key "leisure"
+Add all object which have a key "landuse" or a key "leisure"
+
+* column type "<name>" [key "<key>"]
+Defines a column to the shapefile.
+- The first parameter defines the type of the column, possible values: string,
+  int, float
+- The second parameter defines the name of the column in quotation marks
+- optionally you can define one or several key-parameters. The value of the
+  column <name> will be one of those keys (the first key-parameter has highest
+  priority). If no key-parameters are supplied, the value of key <name> will be
+  used.
+
+Example:
+column string "name"
+If the osm object has a key "name" it will be copied to the column "name".
+
+column string "type" key "landuse" key "leisure"
+If the object has a key "landuse" or a key "leisure" one of those values will
+be copied to the shapefile, whereas the column in the shapefile is called
+"type". "landuse" has higher priority than "leisure".
