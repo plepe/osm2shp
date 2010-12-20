@@ -265,9 +265,30 @@ bool parse_line_where(char *row) {
 }
 
 bool parse_line(char *row) {
+  if(row[0]=='\0')
+    return true;
+
+  if(row[0]=='#')
+    return true;
+
   return parse_line_file(row) ||
     parse_line_column(row) ||
     parse_line_where(row);
+}
+
+void rtrim(char *str) {
+  char c;
+  int p=strlen(str);
+  bool changed=true;
+
+  while( p-- && changed ) {
+    changed=false;
+    c=str[p];
+    if((c=='\n')||(c=='\r')||(c==' ')||(c=='\t')) {
+      str[p]='\0';
+      changed=true;
+    }
+  }
 }
 
 void main() {
@@ -280,6 +301,7 @@ void main() {
   f=fopen("osm2shp.cfg", "r");
 
   while(fgets(row, BUFSIZE, f)) {
+    rtrim(row);
     if(!parse_line(row)) {
       fprintf(stderr, "Error parsing '%s'\n", row);
       exit(1);
