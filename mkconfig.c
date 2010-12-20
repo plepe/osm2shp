@@ -28,6 +28,9 @@ struct shape_file {
 int file_count;
 struct shape_file *all[MAX_SHAPEFILES];
 struct shape_file *current_shape_file;
+char *SHP_TYPES[]={ "SHPT_POINT", "SHPT_ARC", "SHPT_POLYGON" };
+char *COL_TYPES[]={ "FTInteger", "FTString", "FTDouble" };
+char *COL_SIZES[]={ "11", "256", "11, 5" };
 
 void setup_regex() {
   int ret;
@@ -48,11 +51,11 @@ void write_files() {
 
   for(i=0; i<file_count; i++) {
     current_shape_file=all[i];
-    printf("shapefile_new(%d, %i, \"%s\", %i", current_shape_file->id, current_shape_file->format, current_shape_file->name, current_shape_file->ncolumns);
+    printf("shapefile_new(%d, %s, \"%s\", %i", current_shape_file->id, SHP_TYPES[current_shape_file->format], current_shape_file->name, current_shape_file->ncolumns);
 
     for(col_i=0; col_i<current_shape_file->ncolumns; col_i++) {
       struct shape_column *column=current_shape_file->columns[col_i];
-      printf(",\n\t\"%s\"", column->name);
+      printf(",\n\t\"%s\", %s, %s", column->name, COL_TYPES[column->type], COL_SIZES[column->type]);
     }
 
     printf(");\n\n");
