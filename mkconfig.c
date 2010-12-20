@@ -14,6 +14,10 @@ regex_t r_column;
 regex_t r_key;
 regex_t r_where;
 
+#define bool int
+#define true 1
+#define false 0
+
 struct shape_column {
   int type;
   char *name;
@@ -156,8 +160,7 @@ void write_files_parse(int format) {
   }
 }
 
-
-void parse_line(char *row) {
+bool parse_line_file(char *row) {
   regmatch_t matches[10];
   char tmp[BUFSIZE];
   int tmpi;
@@ -185,7 +188,17 @@ void parse_line(char *row) {
     tmp[matches[2].rm_eo-matches[2].rm_so]='\0';
     current_shape_file->name=malloc(strlen(tmp)+1);
     strcpy(current_shape_file->name, tmp);
+
+    return true;
   }
+
+  return false;
+}
+
+bool parse_line_column(char *row) {
+  regmatch_t matches[10];
+  char tmp[BUFSIZE];
+  int tmpi;
 
   if(!(regexec(&r_column, row, 3, matches, 0))) {
     struct shape_column *column=malloc(sizeof(struct shape_file));
@@ -220,7 +233,17 @@ void parse_line(char *row) {
 
       row=row+matches[0].rm_eo+1;
     }
+
+    return true;
   }
+
+  return false;
+}
+
+bool parse_line_where(char *row) {
+  regmatch_t matches[10];
+  char tmp[BUFSIZE];
+  int tmpi;
 
   if(!(regexec(&r_where, row, 1, matches, 0))) {
     row=row+matches[0].rm_eo+1;
@@ -234,7 +257,17 @@ void parse_line(char *row) {
 
       row=row+matches[0].rm_eo+1;
     }
+
+    return true;
   }
+
+  return false;
+}
+
+bool parse_line(char *row) {
+  return parse_line_file(row) ||
+    parse_line_column(row) ||
+    parse_line_where(row);
 }
 
 void main() {
@@ -247,7 +280,10 @@ void main() {
   f=fopen("osm2shp.cfg", "r");
 
   while(fgets(row, BUFSIZE, f)) {
-    parse_line(row);
+    if(!parse_line(row)) {
+      fprintf(stderr, "Error parsing '%s'\n", row);
+      exit(1);
+    }
   }
 
   regex_t r_type;
