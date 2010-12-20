@@ -227,7 +227,10 @@ bool parse_line_column(char *row) {
     row=row+matches[0].rm_eo+1;
 
     column->nkeys=0;
-    while(!(regexec(&r_key, row, 2, matches, 0))) {
+    while(strlen(row)) {
+      if(regexec(&r_key, row, 2, matches, 0))
+        return false;
+
       strncpy(tmp, row+matches[1].rm_so, matches[1].rm_eo-matches[1].rm_so);
       tmp[matches[1].rm_eo-matches[1].rm_so]='\0';
       column->keys[column->nkeys]=malloc(strlen(tmp)+1);
@@ -251,7 +254,10 @@ bool parse_line_where(char *row) {
   if(!(regexec(&r_where, row, 1, matches, 0))) {
     row=row+matches[0].rm_eo+1;
 
-    while(!(regexec(&r_key, row, 2, matches, 0))) {
+    while(strlen(row)) {
+      if(regexec(&r_key, row, 2, matches, 0))
+        return false;
+
       strncpy(tmp, row+matches[1].rm_so, matches[1].rm_eo-matches[1].rm_so);
       tmp[matches[1].rm_eo-matches[1].rm_so]='\0';
       current_shape_file->wheres[current_shape_file->nwheres]=malloc(strlen(tmp)+1);
