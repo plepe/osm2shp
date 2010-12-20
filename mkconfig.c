@@ -301,12 +301,14 @@ void main() {
 
   FILE *f;
   char row[BUFSIZE];
+  int line=0;
   f=fopen("osm2shp.cfg", "r");
 
   while(fgets(row, BUFSIZE, f)) {
+    line++;
     rtrim(row);
     if(!parse_line(row)) {
-      fprintf(stderr, "Error parsing '%s'\n", row);
+      fprintf(stderr, "Error parsing line %d: '%s'\n", line, row);
       exit(1);
     }
   }
