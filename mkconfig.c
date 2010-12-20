@@ -71,13 +71,13 @@ void write_files_setup() {
 
   for(i=0; i<file_count; i++) {
     current_shape_file=all[i];
-    printf("shapefile_new(%d, %s, \"%s\", %i", current_shape_file->id, SHP_TYPES[current_shape_file->format], current_shape_file->name, current_shape_file->ncolumns+1);
+    printf("    shapefile_new(%d, %s, \"%s\", %i", current_shape_file->id, SHP_TYPES[current_shape_file->format], current_shape_file->name, current_shape_file->ncolumns+1);
 
-    printf(",\n\t\"osm_id\", FTInteger, 11");
+    printf(",\n      \"osm_id\", FTInteger, 11");
 
     for(col_i=0; col_i<current_shape_file->ncolumns; col_i++) {
       struct shape_column *column=current_shape_file->columns[col_i];
-      printf(",\n\t\"%s\", %s, %s", column->name, COL_TYPES[column->type], COL_SIZES[column->type]);
+      printf(",\n      \"%s\", %s, %s", column->name, COL_TYPES[column->type], COL_SIZES[column->type]);
     }
 
     printf(");\n\n");
@@ -93,24 +93,24 @@ void write_files_parse(int format) {
     if(current_shape_file->format!=format)
       continue;
 
-    printf("\t{\n");
+    printf("    {\n");
 
     for(where_i=0; where_i<current_shape_file->nwheres; where_i++) {
-	printf("\tconst char *where%d = g_hash_table_lookup(current_tags, \"%s\");\n", where_i, current_shape_file->wheres[where_i]);
+	printf("      const char *where%d = g_hash_table_lookup(current_tags, \"%s\");\n", where_i, current_shape_file->wheres[where_i]);
     }
 
     for(col_i=0; col_i<current_shape_file->ncolumns; col_i++) {
       struct shape_column *column=current_shape_file->columns[col_i];
 
       if(column->nkeys==0) {
-	printf("\tconst char *col%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, column->name);
+	printf("      const char *col%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, column->name);
       }
       else {
 	int key_i;
 
-	printf("\tconst char *col%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, column->keys[0]);
+	printf("      const char *col%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, column->keys[0]);
 	for(key_i=1; key_i<column->nkeys; key_i++) {
-	  printf("\tif (!col%d) col%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, col_i, column->keys[key_i]);
+	  printf("      if (!col%d) col%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, col_i, column->keys[key_i]);
 	}
       }
     }
@@ -130,20 +130,20 @@ void write_files_parse(int format) {
     if(current_shape_file->nwheres>0) {
       int where_i;
 
-      printf("\tif (");
+      printf("      if (");
 
       printf("(where%d)", 0);
       for(where_i=1; where_i<current_shape_file->nwheres; where_i++) {
 	printf(" || (where%d)", where_i);
       }
 
-      printf(" ) {\n");
+      printf(") {\n");
     }
     else {
-      printf("\t{");
+      printf("      {\n");
     }
 
-    printf("\tshapefile_add_%s(%i, current_id", OSM_TYPE[current_shape_file->format], current_shape_file->id);
+    printf("        shapefile_add_%s(%i, current_id", OSM_TYPE[current_shape_file->format], current_shape_file->id);
     for(col_i=0; col_i<current_shape_file->ncolumns; col_i++) {
       struct shape_column *column=current_shape_file->columns[col_i];
       switch(column->type) {
@@ -158,8 +158,8 @@ void write_files_parse(int format) {
 	  break;
       }
     }
-    printf(");\n\t}\n\n");
-    printf("\t}\n");
+    printf(");\n      }\n");
+    printf("    }\n\n");
   }
 }
 
