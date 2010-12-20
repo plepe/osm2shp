@@ -33,6 +33,7 @@ struct shape_file *current_shape_file;
 char *SHP_TYPES[]={ "SHPT_POINT", "SHPT_ARC", "SHPT_POLYGON" };
 char *COL_TYPES[]={ "FTInteger", "FTString", "FTDouble" };
 char *COL_SIZES[]={ "11", "256", "11, 5" };
+char *OSM_TYPE[] ={ "node", "way", "polygon" };
 
 void setup_regex() {
   int ret;
@@ -96,7 +97,7 @@ void write_files_parse(int format) {
       }
     }
 
-    printf("\tshapefile_add_node(%i, current_id", current_shape_file->id);
+    printf("\tshapefile_add_%s(%i, current_id", OSM_TYPE[current_shape_file->format], current_shape_file->id);
     for(col_i=0; col_i<current_shape_file->ncolumns; col_i++) {
       struct shape_column *column=current_shape_file->columns[col_i];
       switch(column->type) {
