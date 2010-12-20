@@ -6,16 +6,18 @@
 
 #define MAX_SHAPEFILES 32
 #define MAX_COLUMNS 32
+#define MAX_KEYS 32
 #define BUFSIZE 1024
 
 regex_t r_file;
 regex_t r_column;
+regex_t r_key;
 
 struct shape_column {
   int type;
   char *name;
   int nkeys;
-  char **keys;
+  char *keys[MAX_KEYS];
 };
 
 struct shape_file {
@@ -23,7 +25,7 @@ struct shape_file {
   int format;
   char* name;
   int ncolumns;
-  struct shape_column *columns[32];
+  struct shape_column *columns[MAX_COLUMNS];
 };
 int file_count;
 struct shape_file *all[MAX_SHAPEFILES];
@@ -41,6 +43,11 @@ void setup_regex() {
   }
 
   if((ret=regcomp(&r_column, "^column ([a-z]+) \"([^\"]*)\"", REG_EXTENDED))) {
+    fprintf(stderr, "Error compiling regular expression: %d\n", ret);
+    exit(1);
+  }
+
+  if((ret=regcomp(&r_key, "^\\w*key \"([^\"]*)\"", REG_EXTENDED))) {
     fprintf(stderr, "Error compiling regular expression: %d\n", ret);
     exit(1);
   }
@@ -76,7 +83,17 @@ void write_files_parse(int format) {
     for(col_i=0; col_i<current_shape_file->ncolumns; col_i++) {
       struct shape_column *column=current_shape_file->columns[col_i];
 
-      printf("\tconst char *col%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, column->name);
+      if(column->nkeys==0) {
+	printf("\tconst char *col%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, column->name);
+      }
+      else {
+	int key_i;
+
+	printf("\tconst char *col%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, column->keys[0]);
+	for(key_i=1; key_i<column->nkeys; key_i++) {
+	  printf("\tif (!col%d) col%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, col_i, column->keys[key_i]);
+	}
+      }
     }
 
     printf("\tshapefile_add_node(%i, current_id", current_shape_file->id);
@@ -138,6 +155,22 @@ void parse_line(char *row) {
     tmp[matches[2].rm_eo-matches[2].rm_so]='\0';
     column->name=malloc(strlen(tmp)+1);
     strcpy(column->name, tmp);
+
+    row=row+matches[0].rm_eo+1;
+    printf("still there: %s\n", row);
+
+    column->nkeys=0;
+    while(!(regexec(&r_key, row, 2, matches, 0))) {
+      strncpy(tmp, row+matches[1].rm_so, matches[1].rm_eo-matches[1].rm_so);
+      tmp[matches[1].rm_eo-matches[1].rm_so]='\0';
+      column->keys[column->nkeys]=malloc(strlen(tmp)+1);
+      printf("A\n");
+      strcpy(column->keys[column->nkeys], tmp);
+      printf("A\n");
+      column->nkeys++;
+
+      row=row+matches[0].rm_eo+1;
+    }
   }
 }
 
