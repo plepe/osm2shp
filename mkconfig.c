@@ -45,22 +45,22 @@ char *OSM_TYPE[] ={ "node", "way", "polygon" };
 void setup_regex() {
   int ret;
 
-  if((ret=regcomp(&r_file, "^file ([a-z]+) \"([^\"]*)\"", REG_EXTENDED))) {
+  if((ret=regcomp(&r_file, "^\\s*file\\s+([a-z]+)\\s+\"([^\"]*)\"", REG_EXTENDED))) {
     fprintf(stderr, "Error compiling regular expression: %d\n", ret);
     exit(1);
   }
 
-  if((ret=regcomp(&r_column, "^column ([a-z]+) \"([^\"]*)\"", REG_EXTENDED))) {
+  if((ret=regcomp(&r_column, "^\\s*column\\s+([a-z]+)\\s+\"([^\"]*)\"", REG_EXTENDED))) {
     fprintf(stderr, "Error compiling regular expression: %d\n", ret);
     exit(1);
   }
 
-  if((ret=regcomp(&r_where, "^\\w*where", REG_EXTENDED))) {
+  if((ret=regcomp(&r_where, "^\\s*where", REG_EXTENDED))) {
     fprintf(stderr, "Error compiling regular expression: %d\n", ret);
     exit(1);
   }
 
-  if((ret=regcomp(&r_key, "^\\w*key \"([^\"]*)\"", REG_EXTENDED))) {
+  if((ret=regcomp(&r_key, "^\\s*key\\s+\"([^\"]*)\"", REG_EXTENDED))) {
     fprintf(stderr, "Error compiling regular expression: %d\n", ret);
     exit(1);
   }
