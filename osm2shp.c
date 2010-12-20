@@ -268,7 +268,7 @@ int extract_integer_tag(const char *name, int def)
     return(atoi(v));
 }
 
-#include "osm2shp.config"
+#include "config.c"
 
 void save_osm_node()
 {
