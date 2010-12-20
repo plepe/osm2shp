@@ -35,7 +35,7 @@ struct shape_file *all[MAX_SHAPEFILES];
 struct shape_file *current_shape_file;
 char *SHP_TYPES[]={ "SHPT_POINT", "SHPT_ARC", "SHPT_POLYGON" };
 char *COL_TYPES[]={ "FTInteger", "FTString", "FTDouble" };
-char *COL_SIZES[]={ "11", "256", "11, 5" };
+char *COL_SIZES[]={ "11", "48", "11, 5" };
 char *OSM_TYPE[] ={ "node", "way", "polygon" };
 
 void setup_regex() {
