@@ -90,19 +90,19 @@ void write_files_parse(int format) {
       continue;
 
     for(where_i=0; where_i<current_shape_file->nwheres; where_i++) {
-	printf("\tconst char *where%d = g_hash_table_lookup(current_tags, \"%s\");\n", where_i, current_shape_file->wheres[where_i]);
+	printf("\twhere%d = g_hash_table_lookup(current_tags, \"%s\");\n", where_i, current_shape_file->wheres[where_i]);
     }
 
     for(col_i=0; col_i<current_shape_file->ncolumns; col_i++) {
       struct shape_column *column=current_shape_file->columns[col_i];
 
       if(column->nkeys==0) {
-	printf("\tconst char *col%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, column->name);
+	printf("\tcol%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, column->name);
       }
       else {
 	int key_i;
 
-	printf("\tconst char *col%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, column->keys[0]);
+	printf("\tcol%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, column->keys[0]);
 	for(key_i=1; key_i<column->nkeys; key_i++) {
 	  printf("\tif (!col%d) col%d = g_hash_table_lookup(current_tags, \"%s\");\n", col_i, col_i, column->keys[key_i]);
 	}
