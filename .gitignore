@@ -1,0 +1,4 @@
+.*.swp
+mkconfig
+osm2shp
+config.c
