@@ -98,8 +98,18 @@ void write_files_parse(int format) {
 
     printf("\tshapefile_add_node(%i, current_id", current_shape_file->id);
     for(col_i=0; col_i<current_shape_file->ncolumns; col_i++) {
-      //struct shape_column *column=current_shape_file->columns[col_i];
-      printf(", col%d", col_i);
+      struct shape_column *column=current_shape_file->columns[col_i];
+      switch(column->type) {
+	case 0:
+	  printf(", col%d ? atoi(col%d) : 0", col_i, col_i);
+	  break;
+	case 1:
+	  printf(", col%d", col_i);
+	  break;
+	case 2:
+	  printf(", col%d ? atof(col%d) : 0.0", col_i, col_i);
+	  break;
+      }
     }
     printf(");\n\n");
   }
@@ -157,16 +167,13 @@ void parse_line(char *row) {
     strcpy(column->name, tmp);
 
     row=row+matches[0].rm_eo+1;
-    printf("still there: %s\n", row);
 
     column->nkeys=0;
     while(!(regexec(&r_key, row, 2, matches, 0))) {
       strncpy(tmp, row+matches[1].rm_so, matches[1].rm_eo-matches[1].rm_so);
       tmp[matches[1].rm_eo-matches[1].rm_so]='\0';
       column->keys[column->nkeys]=malloc(strlen(tmp)+1);
-      printf("A\n");
       strcpy(column->keys[column->nkeys], tmp);
-      printf("A\n");
       column->nkeys++;
 
       row=row+matches[0].rm_eo+1;
@@ -184,8 +191,6 @@ void main() {
   f=fopen("osm2shp.cfg", "r");
 
   while(fgets(row, BUFSIZE, f)) {
-    printf("Read: %s", row);
-
     parse_line(row);
   }
 
