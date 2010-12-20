@@ -156,8 +156,26 @@ void main() {
     parse_line(row);
   }
 
-  write_files_setup();
-  write_files_parse(0);
-  write_files_parse(1);
-  write_files_parse(2);
+  regex_t r_type;
+  regcomp(&r_type, "%TYPE_([0-9])%", REG_EXTENDED);
+
+  FILE *template;
+  char tmp[BUFSIZE];
+  regmatch_t matches[10];
+  int i;
+  template=fopen("config.template", "r");
+  while(fgets(row, BUFSIZE, template)) {
+    if(!strncmp("%SETUP%", row, 7)) {
+      write_files_setup();
+    }
+    else if(!regexec(&r_type, row, 2, matches, 0)) {
+      strncpy(tmp, row+matches[1].rm_so, matches[1].rm_eo-matches[1].rm_so);
+      tmp[matches[1].rm_eo-matches[1].rm_so]='\0';
+
+      write_files_parse(atoi(tmp));
+    }
+    else {
+      printf("%s", row);
+    }
+  }
 }

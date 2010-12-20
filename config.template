@@ -30,47 +30,7 @@ void setup_shapefiles()
     // a length -  how many characters or digits the value  may have, and
     // decimals -  only for FTDouble, the number of decimals.
     
-    shapefile_new(0, SHPT_POLYGON, "buildings", 3, 
-        "osm_id", FTInteger, 11, 
-        "name", FTString, 48, 
-        "type", FTString, 16);
-
-    shapefile_new(1, SHPT_ARC, "waterways", 4, 
-        "osm_id", FTInteger, 11, 
-        "name", FTString, 48, 
-        "type", FTString, 16, 
-        "width", FTInteger, 3);
-
-    shapefile_new(2, SHPT_ARC, "roads", 7, 
-        "osm_id", FTInteger, 11, 
-        "name", FTString, 48, 
-        "ref", FTString, 16, 
-        "type", FTString, 16, 
-        "oneway", FTInteger, 1, 
-        "bridge", FTInteger, 1, 
-        "maxspeed", FTInteger, 3);
-
-    shapefile_new(3, SHPT_ARC, "railways", 3, 
-        "osm_id", FTInteger, 11, 
-        "name", FTString, 48, 
-        "type", FTString, 16);
-
-    shapefile_new(4, SHPT_POINT, "points", 4, 
-        "osm_id", FTInteger, 11, 
-        "timestamp", FTString, 20, 
-        "name", FTString, 48, 
-        "type", FTString, 16);
-
-    shapefile_new(5, SHPT_POINT, "places", 4, 
-        "osm_id", FTInteger, 11, 
-        "name", FTString, 48, 
-        "type", FTString, 16, 
-        "population", FTInteger, 9);
-
-    shapefile_new(6, SHPT_POLYGON, "natural", 3, 
-        "osm_id", FTInteger, 11, 
-        "name", FTString, 48, 
-        "type", FTString, 16);
+%SETUP%
 
 }
 
@@ -93,32 +53,8 @@ void process_osm_node()
     // and "..." is the list of attributes, which must match number and
     // type as specified during setup.
 
-    if (g_hash_table_lookup(current_tags, "place"))
-    {
-        const char *pop = g_hash_table_lookup(current_tags, "population");
-        shapefile_add_node(5, 
-            current_id, 
-            g_hash_table_lookup(current_tags, "name"),
-            g_hash_table_lookup(current_tags, "place"),
-            pop ? atoi(pop) : 0);
-    }
-    else
-    {
-        const char *type = g_hash_table_lookup(current_tags, "amenity");
-        if (!type) type = g_hash_table_lookup(current_tags, "tourism");
-        if (!type) type = g_hash_table_lookup(current_tags, "historic");
-        if (!type) type = g_hash_table_lookup(current_tags, "man_made");
-        if (!type) type = g_hash_table_lookup(current_tags, "railway");
-        if (!type) type = g_hash_table_lookup(current_tags, "highway");
-        if (type)
-        {
-            shapefile_add_node(4, 
-                current_id, 
-                current_timestamp,
-                g_hash_table_lookup(current_tags, "name"),
-                type);
-        }
-    }
+    // nodes
+%TYPE_0%
 };
 
 /**
@@ -142,118 +78,11 @@ void process_osm_way()
     // and "..." is the list of attributes, which must match number and
     // type as specified during setup.
     
-    const char *value = g_hash_table_lookup(current_tags, "highway");
-    if (value)
-    {
-        const char *oneway = g_hash_table_lookup(current_tags, "oneway");
-        int ow = 0;
-        if (oneway)
-        {
-            if (strcmp(oneway, "false") && strcmp(oneway, "no") && strcmp(oneway, "0"))
-            {
-                ow = 1;
-            }
-        }
-        const char *bridge = g_hash_table_lookup(current_tags, "bridge");
-        int br = 0;
-        if (bridge)
-        {
-            if (strcmp(bridge, "false") && strcmp(bridge, "no") && strcmp(bridge, "0"))
-            {
-                br = 1;
-            }
-        }
-        const char *maxspeed = g_hash_table_lookup(current_tags, "maxspeed");
+    // lines
+%TYPE_1%
 
-        shapefile_add_way(2, 
-            current_id,
-            g_hash_table_lookup(current_tags, "name"),
-            g_hash_table_lookup(current_tags, "ref"),
-            value,
-            ow,
-            br,
-            maxspeed ? atoi(maxspeed) : 0);
-        return;
-    }
-
-    value = g_hash_table_lookup(current_tags, "building");
-    if (value)
-    {
-        const char *type = strcmp(value, "yes") ? value : 0;
-        if (!type) type = g_hash_table_lookup(current_tags, "amenity");
-        if (!type) type = g_hash_table_lookup(current_tags, "tourism");
-        if (!type) type = g_hash_table_lookup(current_tags, "historic");
-        if (!type) type = g_hash_table_lookup(current_tags, "man_made");
-        if (!type) type = g_hash_table_lookup(current_tags, "railway");
-        if (!type) type = g_hash_table_lookup(current_tags, "highway");
-
-        shapefile_add_polygon(0, 
-            current_id,
-            g_hash_table_lookup(current_tags, "name"),
-            type);
-        return;
-    }
-
-    value = g_hash_table_lookup(current_tags, "railway");
-    if (value)
-    {
-        shapefile_add_way(3, 
-            current_id,
-            g_hash_table_lookup(current_tags, "name"),
-            value);
-        return;
-    }
-
-    value = g_hash_table_lookup(current_tags, "waterway");
-    if (value && strcmp(value, "riverbank"))
-    {
-        const char *width = g_hash_table_lookup(current_tags, "width");
-        shapefile_add_way(1, 
-            current_id,
-            g_hash_table_lookup(current_tags, "name"),
-            value, 
-            width ? atoi(width) : 0);
-        return;
-    }
-
-    if (value)
-    {
-        shapefile_add_polygon(6, 
-            current_id,
-            g_hash_table_lookup(current_tags, "name"),
-            "riverbank");
-        return;
-    }
-
-    const char *natural = g_hash_table_lookup(current_tags, "natural");
-    const char *landuse = g_hash_table_lookup(current_tags, "landuse");
-    const char *leisure = g_hash_table_lookup(current_tags, "leisure");
-
-    if ((landuse && !strcmp(landuse, "forest")) || (natural && !strcmp(natural, "wood")))
-    {
-        shapefile_add_polygon(6, 
-            current_id,
-            g_hash_table_lookup(current_tags, "name"),
-            "forest");
-        return;
-    }
-    if (leisure && !strcmp(leisure, "park")) 
-    {
-        shapefile_add_polygon(6, 
-            current_id,
-            g_hash_table_lookup(current_tags, "name"),
-            "park");
-        return;
-    }
-    if (natural && !strcmp(natural, "water")) 
-    {
-        shapefile_add_polygon(6, 
-            current_id,
-            g_hash_table_lookup(current_tags, "name"),
-            "water");
-        return;
-    }
-
+   // polygons
+%TYPE_2%
 };
 
 // ---------------------------------------------------------------------------
