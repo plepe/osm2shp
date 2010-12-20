@@ -93,6 +93,8 @@ void write_files_parse(int format) {
     if(current_shape_file->format!=format)
       continue;
 
+    printf("\t{\n");
+
     for(where_i=0; where_i<current_shape_file->nwheres; where_i++) {
 	printf("\tconst char *where%d = g_hash_table_lookup(current_tags, \"%s\");\n", where_i, current_shape_file->wheres[where_i]);
     }
@@ -157,6 +159,7 @@ void write_files_parse(int format) {
       }
     }
     printf(");\n\t}\n\n");
+    printf("\t}\n");
   }
 }
 
