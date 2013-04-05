@@ -1,0 +1,14 @@
+This installation was performed on Ubuntu Linux x86 64bit.
+
+Install dependencies:
+  apt-get install libxml2-dev git-core libshp-dev libglib2.0-dev
+
+Adapt osm2shp.cfg to your needs. You need to recompile the program after
+changing osm2shp.cfg.
+
+Run make to compile sourcecode:
+  make
+
+Run binary:
+  mkdir shapefiles
+  ./osm2shp -d shapefiles/ map.osm
